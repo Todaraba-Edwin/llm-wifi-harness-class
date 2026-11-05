@@ -1,0 +1,178 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: 'PretendardVariable';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2611030106@font-variable-694/variable-694/PretendardVariable.woff2') format('woff2');
+  font-weight: 45 930;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BusanDandiGothic';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2610132210@l/l/%EB%B6%80%EC%82%B0%EB%8B%A8%EB%94%94%EA%B3%A0%EB%94%95L.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BusanDandiGothic';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2610132210@l/l/%EB%B6%80%EC%82%B0%EB%8B%A8%EB%94%94%EA%B3%A0%EB%94%95M.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BusanDandiGothic';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2610132210@l/l/%EB%B6%80%EC%82%B0%EB%8B%A8%EB%94%94%EA%B3%A0%EB%94%95B.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Material (MUI) design tokens. Light is the default; html.dark (next-themes) swaps them. */
+:root {
+  --font-sans: 'PretendardVariable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font-display: 'BusanDandiGothic', var(--font-sans);
+  --primary: #1976d2;
+  --on-primary: #fff;
+  --background: #fafafa;
+  --surface: #fff;
+  --surface-variant: #f5f5f5;
+  --divider: rgba(0, 0, 0, 0.12);
+  --text-primary: rgba(0, 0, 0, 0.87);
+  --text-secondary: rgba(0, 0, 0, 0.6);
+  --hover: rgba(0, 0, 0, 0.04);
+  --selected: color-mix(in srgb, var(--primary) 8%, transparent);
+  --error: #d32f2f;
+  --elev-1: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  --elev-4: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+}
+html.dark {
+  color-scheme: dark;
+  --primary: #90caf9;
+  --on-primary: #0b1f33;
+  --background: #121212;
+  --surface: #1e1e1e;
+  --surface-variant: #2a2a2a;
+  --divider: rgba(255, 255, 255, 0.12);
+  --text-primary: #fff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --hover: rgba(255, 255, 255, 0.08);
+  --error: #f44336;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-canvas: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-variant: var(--surface-variant);
+  --color-divider: var(--divider);
+  --color-fg: var(--text-primary);
+  --color-fg-2: var(--text-secondary);
+  --color-hover: var(--hover);
+  --color-selected: var(--selected);
+  --color-error: var(--error);
+  --shadow-elev1: var(--elev-1);
+  --shadow-elev4: var(--elev-4);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  background: var(--background);
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+/* Unlayered on purpose: these must beat the `lg:block` / `lg:grid-cols-[...]` utilities in @layer utilities. */
+html[data-sidebar='collapsed'] #sidebar {
+  display: none;
+}
+@media (min-width: 64rem) {
+  html[data-sidebar='collapsed'] #site-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.prose a.wikilink {
+  text-decoration-style: dotted;
+}
+.prose :where(pre) {
+  overflow-x: auto;
+}
+.prose :where(code):not(pre code)::before,
+.prose :where(code):not(pre code)::after {
+  content: none;
+}
+
+.prose {
+  --tw-prose-body: var(--text-primary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-secondary);
+  --tw-prose-bullets: var(--text-secondary);
+  --tw-prose-hr: var(--divider);
+  --tw-prose-quotes: var(--text-primary);
+  --tw-prose-quote-borders: var(--divider);
+  --tw-prose-captions: var(--text-secondary);
+  --tw-prose-kbd: var(--text-primary);
+  --tw-prose-kbd-shadows: 0 0 0;
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: var(--surface-variant);
+  --tw-prose-th-borders: var(--divider);
+  --tw-prose-td-borders: var(--divider);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.prose :where(h1) {
+  font-size: 2.125rem;
+  line-height: 1.235;
+  font-weight: 500;
+}
+.prose :where(h2) {
+  font-size: 1.5rem;
+  line-height: 1.334;
+  font-weight: 500;
+}
+.prose :where(h3) {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.prose :where(h1, h2, h3, h4) {
+  font-family: var(--font-display);
+}
+.prose :where(pre) {
+  border-radius: 4px;
+  border: 1px solid var(--divider);
+}
+.prose :where(code):not(pre code) {
+  background: var(--surface-variant);
+  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+}
+.prose :where(table) {
+  font-size: 0.875rem;
+}
+.prose :where(tbody tr) {
+  border-bottom-color: var(--divider);
+}

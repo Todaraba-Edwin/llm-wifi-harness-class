@@ -1,0 +1,78 @@
+name: deploy-env-check
+
+# Builds and starts the site the way Vercel does (VERCEL=1, NODE_ENV=production) with the deployment
+# variables from repository secrets/variables, then probes it. No OpenAI, GitHub or Upstash call is made:
+# the checks only reach the owner gate. Secret values are never printed.
+#
+# Set secrets: AUTH_SECRET, AUTH_GITHUB_SECRET, OPENAI_API_KEY, UPSTASH_REDIS_REST_TOKEN, GH_WRITEBACK_TOKEN
+# Set variables: AUTH_GITHUB_ID, OWNER_GITHUB_ID, OPENAI_MODEL, QA_DAILY_CAP, UPSTASH_REDIS_REST_URL,
+#                GITHUB_REPO, BETTER_AUTH_URL (the production URL)
+
+on:
+  workflow_dispatch:
+    inputs:
+      require_env:
+        description: 'Fail unless the Q&A configuration is valid'
+        type: boolean
+        default: true
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-env-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL: '1'
+      NODE_ENV: production
+      PORT: '3100'
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      AUTH_GITHUB_ID: ${{ vars.AUTH_GITHUB_ID }}
+      AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+      OWNER_GITHUB_ID: ${{ vars.OWNER_GITHUB_ID }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      QA_DAILY_CAP: ${{ vars.QA_DAILY_CAP }}
+      UPSTASH_REDIS_REST_URL: ${{ vars.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+      GITHUB_REPO: ${{ vars.GITHUB_REPO }}
+      GH_WRITEBACK_TOKEN: ${{ secrets.GH_WRITEBACK_TOKEN }}
+      BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Static checks
+        run: |
+          pnpm typecheck
+          pnpm lint
+          pnpm lint:secret-names
+          pnpm test
+      - name: Build (Vercel-like env)
+        run: pnpm build
+      - name: Scan the build output for secrets
+        run: pnpm verify:build
+      - name: Start and probe
+        env:
+          REQUIRE_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.require_env || github.event_name == 'push' }}
+        run: |
+          pnpm exec next start -p "$PORT" > /tmp/server.log 2>&1 &
+          for i in $(seq 1 60); do curl -fs "http://localhost:$PORT/" >/dev/null && break; sleep 1; done
+          flag=""
+          if [ "$REQUIRE_ENV" = "true" ]; then flag="--require-env"; fi
+          pnpm exec tsx scripts/check-deploy-env.ts "http://localhost:$PORT" $flag
+      - name: Server log (names only; the logger never writes values)
+        if: failure()
+        run: tail -n 50 /tmp/server.log

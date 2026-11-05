@@ -1,0 +1,3 @@
+wiki package/consumer report
+checks: yaml frontmatter parses for all wiki and raw files; wikilinks 0 broken; all wiki pages listed in wiki/index.md; frontmatter sources paths 0 missing; log headings match '^## \[YYYY-MM-DD\] op | '; raw files carry source+fetched.
+reviews: cleaner, architect and qa lanes recorded in the ultragoal ledger gate for this generation.

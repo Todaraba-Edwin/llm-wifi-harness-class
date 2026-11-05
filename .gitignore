@@ -1,1 +1,23 @@
 .gjc-env/
+.gjc/
+
+# site (Next.js)
+node_modules/
+.next/
+out/
+next-env.d.ts
+tsconfig.tsbuildinfo
+src/generated/
+public/search-index.json
+public/graph.json
+test-results/
+playwright-report/
+.env
+.env.*
+!.env.example
+node_modules
+
+# local files
+issues/
+.DS_Store
+.vscode/

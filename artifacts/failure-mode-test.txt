@@ -1,0 +1,1 @@
+adversarial/failure-mode probes: unquoted ': ' titles, unclosed lists, truncated or empty pages, stale 'wifi' references, orphan pages, duplicate slugs, elision/base64 markers in raw. expected: none present.
