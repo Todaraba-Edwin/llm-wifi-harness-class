@@ -49,7 +49,16 @@ const DEFAULT_DAILY_CAP = 50;
 
 export type DailyCap = number | 'unlimited';
 
-export type QaEnv = Required<z.infer<typeof QaEnvSchema>> & z.infer<typeof OptionalEnvSchema> & { cap: DailyCap; devLocal: boolean };
+/**
+ * `QA_PUBLIC=true` (or `1`) lets anyone ask without signing in. The daily cap still applies to all visitors together.
+ * Off by default: the owner-only gate stays the default for every environment.
+ */
+function publicAccessOf(source: EnvSource): boolean {
+  return ['1', 'true'].includes((source.QA_PUBLIC ?? '').trim().toLowerCase());
+}
+
+export type QaEnv = Required<z.infer<typeof QaEnvSchema>> &
+  z.infer<typeof OptionalEnvSchema> & { cap: DailyCap; devLocal: boolean; publicAccess: boolean };
 
 /**
  * Unset or blank -> 50. A positive integer -> that value. `0` -> unlimited, but only when the
@@ -89,6 +98,7 @@ const SCHEMA_KEYS = [
   ...Object.keys(QaEnvSchema.shape),
   ...Object.keys(OptionalEnvSchema.shape),
   'QA_DAILY_CAP',
+  'QA_PUBLIC',
   ...Object.values(UPSTASH_FALLBACKS),
   ...MODE_ENV_KEYS,
 ];
@@ -133,12 +143,20 @@ export function getEnv(source: EnvSource = process.env): QaEnv | null {
         ...opt.data,
         cap,
         devLocal: !auth.success,
+        publicAccess: publicAccessOf(source),
       };
     }
   } else {
     const req = QaEnvSchema.safeParse(resolved);
     if (req.success && opt.success && cap !== null) {
-      value = { ...req.data, OPENAI_MODEL: req.data.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL, ...opt.data, cap, devLocal: false };
+      value = {
+        ...req.data,
+        OPENAI_MODEL: req.data.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL,
+        ...opt.data,
+        cap,
+        devLocal: false,
+        publicAccess: publicAccessOf(source),
+      };
     }
   }
   memo = { key, value };

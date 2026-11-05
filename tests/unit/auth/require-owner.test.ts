@@ -6,7 +6,21 @@ import { BASE, Jar, OWNER, SECRET, STRANGER, newAuth, req, signIn, startNetworkM
 beforeAll(startNetworkMock);
 afterAll(stopNetworkMock);
 
-const ENV_NAMES = ['AUTH_SECRET', 'AUTH_GITHUB_ID', 'AUTH_GITHUB_SECRET', 'OWNER_GITHUB_ID', 'OPENAI_API_KEY', 'OPENAI_MODEL', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'BETTER_AUTH_URL', 'VERCEL', 'VERCEL_ENV', 'VERCEL_PROJECT_PRODUCTION_URL'];
+const ENV_NAMES = [
+  'QA_PUBLIC',
+  'AUTH_SECRET',
+  'AUTH_GITHUB_ID',
+  'AUTH_GITHUB_SECRET',
+  'OWNER_GITHUB_ID',
+  'OPENAI_API_KEY',
+  'OPENAI_MODEL',
+  'UPSTASH_REDIS_REST_URL',
+  'UPSTASH_REDIS_REST_TOKEN',
+  'BETTER_AUTH_URL',
+  'VERCEL',
+  'VERCEL_ENV',
+  'VERCEL_PROJECT_PRODUCTION_URL',
+];
 
 function configure(extra: Record<string, string> = {}): void {
   Object.assign(process.env, {
@@ -109,11 +123,30 @@ describe('requireOwner (environment-driven, as used by handlers)', () => {
   });
 });
 
+describe('requireOwner with QA_PUBLIC', () => {
+  it('QA_PUBLIC=true lets a visitor without a session through', async () => {
+    configure({ QA_PUBLIC: 'true' });
+    expect((await statusOf(await requireOwner(req('/api/qa'))))[0]).toBe(200);
+  });
+
+  it('any other value keeps the owner gate (401 without a session)', async () => {
+    configure({ QA_PUBLIC: 'no' });
+    expect((await statusOf(await requireOwner(req('/api/qa'))))[0]).toBe(401);
+  });
+});
+
 describe('checkOwner: any exception denies', () => {
   const throwing = (where: 'getSession' | 'context') =>
     ({
-      api: { getSession: async () => { if (where === 'getSession') throw new Error('boom SECRET-VALUE'); return { user: { id: 'u1' } }; } },
-      get $context(): Promise<never> { return Promise.reject(new Error('boom SECRET-VALUE')); },
+      api: {
+        getSession: async () => {
+          if (where === 'getSession') throw new Error('boom SECRET-VALUE');
+          return { user: { id: 'u1' } };
+        },
+      },
+      get $context(): Promise<never> {
+        return Promise.reject(new Error('boom SECRET-VALUE'));
+      },
     }) as unknown as Auth;
 
   it.each(['getSession', 'context'] as const)('library throw in %s -> 401, never a pass, nothing leaked', async (where) => {

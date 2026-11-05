@@ -16,7 +16,9 @@ export default function AskPage() {
       return (
         <div>
           <h1 className="mb-1 font-medium text-[1.75rem] leading-[1.235] break-words sm:text-[2.125rem]">Q&amp;A (로컬 개발)</h1>
-          <p className="mb-3 text-sm text-fg-2">로컬 개발 모드입니다. 아래 환경 변수가 설정되지 않아 로그인과 질문은 아직 동작하지 않습니다(이름만 표시).</p>
+          <p className="mb-3 text-sm text-fg-2">
+            로컬 개발 모드입니다. 아래 환경 변수가 설정되지 않아 로그인과 질문은 아직 동작하지 않습니다(이름만 표시).
+          </p>
           <ul data-testid="missing-env" className="list-disc pl-5 text-sm">
             {invalidQaKeys().map((k) => (
               <li key={k}>
@@ -34,5 +36,5 @@ export default function AskPage() {
       </div>
     );
   }
-  return <AskClient devLocal={env.devLocal} />;
+  return <AskClient devLocal={env.devLocal} publicAccess={env.publicAccess} />;
 }

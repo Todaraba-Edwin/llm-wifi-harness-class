@@ -63,6 +63,8 @@ export async function requireOwner(req: Request): Promise<OwnerCheck> {
     const env = getEnv();
     // Local `next dev` with only the OpenAI key configured: there is no owner sign-in to check (see env.server.ts).
     if (env?.devLocal) return { ok: true, ownerId: 'local-dev' };
+    // QA_PUBLIC=true: anyone may ask. The env must still be complete (handlers check it first), and the daily cap still applies.
+    if (env?.publicAccess) return { ok: true, ownerId: 'public' };
     const auth = getAuth();
     if (!env || !auth) return deny(503, 'unconfigured');
     return await checkOwner(auth, authSettings(env).ownerGithubId, req);

@@ -133,7 +133,7 @@ function PendingPanel({ mode }: { mode: 'wiki' | 'web' }) {
 }
 
 /** Owner-only Q&A shell. Sign-in plus the question form; the server enforces owner, cap and citation checks. */
-export default function AskClient({ devLocal = false }: { devLocal?: boolean }) {
+export default function AskClient({ devLocal = false, publicAccess = false }: { devLocal?: boolean; publicAccess?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [question, setQuestion] = useState('');
@@ -286,6 +286,10 @@ export default function AskClient({ devLocal = false }: { devLocal?: boolean }) 
         {devLocal ? (
           <p data-testid="dev-local-note" className="mb-6 text-sm text-fg-2">
             로컬 개발 모드입니다. 로그인 없이 질문할 수 있고, 일일 한도는 서버 메모리에서만 셉니다.
+          </p>
+        ) : publicAccess ? (
+          <p data-testid="public-note" className="mb-6 text-sm text-fg-2">
+            로그인 없이 질문할 수 있습니다. 일일 질문 한도는 모든 방문자가 함께 씁니다.
           </p>
         ) : (
           <>
